@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>聊天室页面</title>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		body{
+			background: url(images/bg.jpg);
+		}
+		div.chart{
+			width: 960px;
+			margin:50px auto;
+		}
+		div.chart .header{
+			width: 100%;
+			height: 150px;
+			border-radius:5px;
+			background-image:url(images/banner1.jpg);
+			background-size:contain;  
+		}
+		.header div{
+			float: left;
+		}
+		div.chart .header .head_pic{
+			width:100px;
+			height:100px;
+			margin-left: 100px;
+			margin-top:25px;
+
+		}
+		div.chart .header .head_pic img{
+			width:78px;
+			height:78px;
+			display: inline-block;
+			border-radius: 50%;
+		}
+		.name{
+			width:200px;
+			height: 150px;
+			line-height: 150px;
+		}
+		div.chart .header .exit{
+			width: 100px;
+			height:150px;
+			float: right;
+			text-align: center;
+			margin-right:100px;
+		}
+		div.chart .header .exit a{
+			text-decoration: none;
+			display: inline-block;
+			width:80px;
+			height:25px;
+			background: #eee;
+			margin-top:62.5px;
+
+
+		}
+		div.chart .body{
+			width:100%;
+			height:500px;
+			border:2px solid #fefefe;
+			box-sizing:border-box;
+			overflow: hidden;
+		}
+		div.chart .body .nav{
+			width:300px;
+			height:100%;
+			border-right:28px solid #bcbcbc;
+			float: left;
+		}
+		div.chart .body .nav li{
+			width:150px;
+			height:40px;
+			/*padding-top:20px;*/
+			line-height: 40px;
+			color: #cecece;
+			margin:20px auto;
+			list-style: none;
+
+
+		}
+		div.chart .body .nav li span{
+			float: left;
+			display: block;
+
+			height:40px;
+			width:80px;
+			padding-left:20px;
+
+		}
+		div.chart .body .nav li img{
+			width:20px;
+			height: 20px;
+			border-radius: 50%;
+			float: left;
+		}
+		div.chart .body .main{
+			width:600px;
+			height:100%;
+			border-left:28px solid #bcbcbc;
+			float: right;
+
+		}
+		div.chart .body .main .watch{
+			width:100%;
+			height:450px;
+			overflow: auto;
+		}
+		div.chart .body .main .watch li{
+			list-style: none;
+			color:#ececec;
+			width:100%;
+			/*height:60px;*/
+			overflow: hidden;
+		}
+		div.chart .body .main .watch li.welcome{
+			width: 300px;
+			height: 60px;
+			margin:0 auto;
+		}
+		div.chart .body .main .watch li span{
+			float: left;
+
+		}
+		div.chart .body .main .watch li span.text1{
+			display: block;
+			/*width:50%;*/
+			text-align: right;
+			border: 1px solid #000;
+			border-radius: 10%;
+			background: #fefefe;
+			color:#666;
+			padding:10px;
+			margin-right: 5px;
+		}
+		div.chart .body .main .watch li span.text2{
+			display: block;
+			/*width:50%;*/
+			text-align: left;
+			border: 1px solid #000;
+			border-radius: 10%;
+			background: #fefefe;
+			color:#666;
+			padding:10px;
+			margin-left:5px;
+
+		}
+
+		div.chart .body .main .watch li img{
+			float: left;
+			width: 50px;
+			height: 50px;
+			border-radius: 50%;
+		}
+		div.chart .body .main .watch #mysend img{
+			float: right;
+		}
+		div.chart .body .main .watch #mysend span{
+			float: right;	
+		}
+		div.chart .body .main .input{
+			width:100%;
+			height:50px;
+		}
+		div.chart .body .main .input .kuang{
+			width:450px;
+			height: 40px;
+		}
+		div.chart .body .main .input .btn{
+			width:100px;
+			height: 40px;
+		}
+	</style>
+	<script type="text/javascript">
+		var head_pic = "<%=head_pic%>";
+		var username = "<%=username%>";
+		
+	</script>
+</head>
+<body>
+	<div class="chart">
+		<div class="header">
+			<div class="head_pic">
+				<img src=<%=head_pic%> alt="">	
+			</div>
+			<div class="name">
+				<%=username%>
+			</div>
+			<div class="exit">
+				<a href="/exit" id ="exit">退出</a>
+			</div>
+		</div>
+		<div class="body">
+			<ul class="nav">
+				
+			</ul>
+			<div class="main">
+				<ul class="watch">
+					
+				</ul>
+				<div class="input">
+					<input type="text" class="kuang" id = "kuang">
+					<input type="button" class="btn" id="btn"value="发送">
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="/socket.io/socket.io.js"></script>
+	<script>
+		var socket = io();
+		var kuang = document.querySelector(".kuang");
+		var btn = document.querySelector(".btn");
+		var watch = document.querySelector(".watch");
+		var user = document.querySelector(".nav")
+		btn.onclick=function(){
+			console.log("触发")
+			console.log(kuang.value)
+			
+
+			if(!kuang.value){
+				return;
+			}
+			socket.emit("sendMessage",{
+				username:"<%=username%>",
+				message:kuang.value,
+				head_pic:"<%=head_pic%>"
+			})
+			kuang.value = "";
+		}
+		socket.on("renderMessage",function(data){
+			if(data.username === username){
+				var str =  "<li id='mysend'><img src="+data.head_pic+"><span>:"+data.username+"</span><span class='text1'>"+data.message+"</span></li>"
+			}else{
+				str = "<li><img src="+data.head_pic+"><span>"+data.username+":</span><span class='text2'>"+data.message+"</span></li>"
+			}
+			watch.innerHTML+=str;
+		watch.scrollTop = 10000000000000;
+		})
+		socket.on("connect",function(){
+			console.log("我来了");
+			socket.emit("wolaile",{
+				username:username,
+				head_pic:head_pic
+			})
+			socket.emit("sendSelfInfo",{
+				username:username,
+				head_pic:head_pic
+			})
+		})
+
+		socket.on("user",function(data){
+			var str="";
+			for(var i in data){
+				str+="<li><img src="+data[i].head_pic+"><span>"+data[i].username+"</span></li>";
+			}
+			
+			user.innerHTML=str;
+		})
+		socket.on("welcome",function(data){
+			var li  = '<li class="welcome">尊敬的'+data.username+'进入了聊天室</li>';
+			watch.innerHTML+=li;
+		})
+		socket.on("someonego",function(data){
+			var li  = '<li class="welcome">尊敬的'+data.username+'离开了聊天室</li>';
+			watch.innerHTML+=li;
+		})
+
+	</script>	
+</body>
+</html>
